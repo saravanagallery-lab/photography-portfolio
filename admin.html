@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Studio Admin</title><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
+
+<style>
+/* ---------------------------------------------------------------
+   Design plan
+   Layout: full-bleed editorial sections, 1200px content column,
+   generous vertical rhythm; portrait-oriented masonry for the
+   portfolio; overlapping duotone frames in About.
+----------------------------------------------------------------- */
+:root{
+  --bg:#faf9f7; --bg-raised:#ffffff; --fg:#171410; --mut:#6b645a;
+  --line:#e7e2da; --accent:#a9742c; --accent-soft:#f1e3cc;
+  --dark-bg:#121011; --dark-fg:#f3efe8;
+  --display:'Playfair Display', Georgia, 'Times New Roman', serif;
+  --body:'Inter', -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121011; --bg-raised:#1a1715; --fg:#f3efe8; --mut:#a79e91;
+    --line:#2d2823; --accent:#d9a84f; --accent-soft:#2a2218;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121011; --bg-raised:#1a1715; --fg:#f3efe8; --mut:#a79e91;
+  --line:#2d2823; --accent:#d9a84f; --accent-soft:#2a2218;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+:root{box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:5vw}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance}
+.eyebrow{font-family:var(--body);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.lede{color:var(--mut);font-size:1.05rem;max-width:40em}
+a{color:inherit}
+button{font-family:var(--body);cursor:pointer}
+::selection{background:var(--accent-soft);color:var(--fg)}
+
+/* Nav */
+.nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:50;transition:background .35s ease,border-color .35s ease,padding .3s ease}
+.nav-inner{max-width:1180px;margin:0 auto;padding:22px 5vw;display:flex;align-items:center;justify-content:space-between}
+.nav.solid{background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav.solid .nav-inner{padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-style:italic;font-size:1.25rem;color:var(--fg);text-decoration:none}
+.brand svg{flex:none}
+.navlinks{display:flex;align-items:center;gap:34px}
+.navlinks a{text-decoration:none;font-size:.86rem;letter-spacing:.03em;color:var(--fg);opacity:.85;position:relative;padding-block:4px}
+.navlinks a:hover{opacity:1}
+.navlinks a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+.navlinks a:hover::after{transform:scaleX(1)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;border-radius:2px;font-size:.82rem;letter-spacing:.04em;font-weight:600;text-decoration:none;border:1px solid var(--accent);transition:transform .2s ease,background .2s ease,color .2s ease}
+.btn-solid{background:var(--accent);color:#1b1304}
+.btn-solid:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.btn-ghost{background:transparent;color:inherit;border-color:color-mix(in srgb, var(--fg) 25%, transparent)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost.on-hero{color:#f3efe8;border-color:#f3efe8}
+.burger{display:none;background:none;border:0;padding:6px;color:var(--fg)}
+@media (max-width:860px){
+  .navlinks{display:none}
+  .burger{display:flex}
+}
+.mobile-menu{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:24px 6vw;gap:28px}
+.mobile-menu a{font-family:var(--display);font-size:1.6rem;text-decoration:none;color:var(--fg)}
+.mobile-close{align-self:flex-end;background:none;border:0;color:var(--fg)}
+
+/* Hero */
+.hero{position:relative;min-height:92vh;display:flex;align-items:flex-end;color:#f3efe8;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center 30%}
+.hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,8,6,.55) 0%, rgba(10,8,6,.35) 40%, rgba(10,8,6,.85) 100%)}
+.hero-content{position:relative;z-index:2;padding:0 5vw 9vh;max-width:760px}
+.hero-eyebrow{font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:#d9a84f;font-weight:600;opacity:0;animation:fadeUp .8s ease .2s forwards}
+.hero h1{font-style:italic;font-size:clamp(2.4rem,6vw,4.6rem);line-height:1.08;margin:14px 0 18px;opacity:0;animation:fadeUp .9s ease .4s forwards}
+.hero p{font-size:1.1rem;color:#e8e1d4;max-width:34em;opacity:0;animation:fadeUp .9s ease .6s forwards}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;margin-top:30px;opacity:0;animation:fadeUp .9s ease .8s forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.scrolldown{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:2;color:#f3efe8;opacity:.8;animation:bounce 2.2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+@media (prefers-reduced-motion: reduce){
+  .hero-eyebrow,.hero h1,.hero p,.hero-ctas{animation:none;opacity:1}
+  .scrolldown{animation:none}
+}
+
+section{padding-block:7.5rem}
+.section-head{display:flex;flex-direction:column;gap:14px;margin-bottom:3rem;max-width:620px}
+.section-head h2{font-size:clamp(1.9rem,3.6vw,2.6rem);font-style:italic}
+
+/* Portfolio */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:2.6rem}
+.chip{padding:9px 18px;border-radius:2px;border:1px solid var(--line);background:transparent;color:var(--mut);font-size:.82rem;letter-spacing:.03em;transition:all .2s ease}
+.chip.on,.chip:hover{border-color:var(--accent);color:var(--accent)}
+.masonry{columns:3 260px;column-gap:14px}
+@media (max-width:700px){.masonry{columns:1}}
+.pitem{break-inside:avoid;margin-bottom:14px;position:relative;overflow:hidden;cursor:pointer;background:var(--bg-raised)}
+.pitem img{width:100%;transition:transform .6s cubic-bezier(.2,.7,.2,1);display:block}
+.pitem:hover img{transform:scale(1.06)}
+.poverlay{position:absolute;inset:0;background:linear-gradient(0deg, rgba(10,8,6,.82) 0%, rgba(10,8,6,0) 55%);opacity:0;transition:opacity .3s ease;display:flex;align-items:flex-end;padding:18px;color:#f3efe8}
+.pitem:hover .poverlay{opacity:1}
+.poverlay .pcat{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#d9a84f;display:block;margin-bottom:4px}
+.poverlay .ptitle{font-family:var(--display);font-style:italic;font-size:1.1rem}
+
+/* Lightbox */
+.lightbox{position:fixed;inset:0;z-index:90;background:rgba(8,6,5,.96);display:flex;align-items:center;justify-content:center;padding:4vh 4vw}
+.lightbox img{max-height:86vh;max-width:86vw;object-fit:contain;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.lightbox-cap{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:#f3efe8}
+.lightbox-cap .pcat{color:#d9a84f;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase}
+.lb-btn{position:absolute;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#f3efe8;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.lb-btn:hover{background:rgba(255,255,255,.18)}
+.lb-close{top:env(safe-area-inset-top,22px);right:22px}
+.lb-prev{left:16px;top:50%;transform:translateY(-50%)}
+.lb-next{right:16px;top:50%;transform:translateY(-50%)}
+@media (max-width:700px){.lb-prev,.lb-next{width:38px;height:38px}}
+
+/* Services */
+.services-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+@media (max-width:760px){.services-grid{grid-template-columns:1fr}}
+.svc-card{background:var(--bg-raised);border:1px solid var(--line);display:flex;flex-direction:column}
+.svc-img{height:200px;background-size:cover;background-position:center;position:relative}
+.svc-badge{position:absolute;top:16px;left:16px;background:var(--bg);color:var(--fg);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px}
+.svc-body{padding:28px}
+.svc-body h3{font-size:1.4rem;font-style:italic}
+.svc-price{font-family:var(--display);font-size:2rem;color:var(--accent);margin:10px 0 18px}
+.svc-price span{font-size:.9rem;color:var(--mut);font-family:var(--body)}
+.svc-feats{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px}
+.svc-feats li{display:flex;gap:10px;align-items:flex-start;font-size:.92rem;color:var(--mut)}
+.svc-feats svg{flex:none;margin-top:3px;color:var(--accent)}
+.svc-cta{width:100%;text-align:center;padding:13px;background:transparent;border:1px solid var(--fg);color:var(--fg);font-size:.82rem;letter-spacing:.04em;font-weight:600;transition:all .2s ease}
+.svc-cta:hover{background:var(--fg);color:var(--bg)}
+
+/* About */
+.about-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center}
+@media (max-width:860px){.about-grid{grid-template-columns:1fr}}
+.about-imgs{position:relative;min-height:420px}
+.about-imgs img{position:absolute;object-fit:cover}
+.about-img1{width:72%;height:360px;top:0;left:0;filter:grayscale(.15) sepia(.08)}
+.about-img2{width:58%;height:260px;bottom:0;right:0;border:8px solid var(--bg)}
+.about-badge{position:absolute;top:30%;right:-14px;background:var(--accent);color:#1b1304;width:112px;height:112px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--display);font-style:italic;font-size:.85rem;line-height:1.25;padding:8px;z-index:2;box-shadow:0 14px 30px rgba(0,0,0,.25)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat b{display:block;font-family:var(--display);font-size:2.1rem;color:var(--accent)}
+.stat span{font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+
+/* Testimonials */
+.dark-section{background:var(--dark-bg);color:var(--dark-fg)}
+.dark-section .eyebrow{color:#d9a84f}
+.dark-section .lede{color:#b8b0a2}
+.test-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+@media (max-width:760px){.test-grid{grid-template-columns:1fr}}
+.test-card{background:#1a1715;border:1px solid #2d2823;padding:30px}
+.test-quote{color:#d9a84f;opacity:.5;margin-bottom:10px}
+.test-stars{color:#d9a84f;letter-spacing:2px;margin-bottom:14px;font-size:.9rem}
+.test-text{font-size:1rem;color:#e8e1d4;margin-bottom:20px}
+.test-who{display:flex;flex-direction:column}
+.test-who b{font-family:var(--display);font-style:italic;font-size:1.05rem}
+.test-who span{font-size:.78rem;color:#a79e91}
+
+/* Contact */
+.contact-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px}
+@media (max-width:860px){.contact-grid{grid-template-columns:1fr}}
+.info-card{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--line)}
+.info-card svg{flex:none;color:var(--accent);margin-top:2px}
+.info-card b{display:block;font-size:.95rem}
+.info-card span{color:var(--mut);font-size:.88rem}
+.form-row{display:flex;gap:16px;flex-wrap:wrap}
+.field{flex:1;min-width:200px;display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.field label{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.field input,.field select,.field textarea{background:var(--bg-raised);border:1px solid var(--line);padding:12px 14px;font:inherit;color:var(--fg);border-radius:2px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.submit-btn{padding:14px 30px;background:var(--accent);color:#1b1304;border:0;font-weight:600;letter-spacing:.04em;font-size:.86rem;border-radius:2px}
+.submit-btn:disabled{opacity:.6;cursor:default}
+.success-box{border:1px solid var(--accent);background:var(--accent-soft);padding:24px;display:flex;gap:14px;align-items:flex-start}
+.success-box svg{flex:none;color:var(--accent);margin-top:2px}
+.form-note{font-size:.8rem;color:var(--mut);margin-top:10px}
+
+/* Footer */
+footer{border-top:1px solid var(--line);padding-block:3.5rem}
+.foot-grid{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
+.foot-links{display:flex;gap:26px;flex-wrap:wrap}
+.foot-links a{text-decoration:none;color:var(--mut);font-size:.85rem}
+.foot-links a:hover{color:var(--accent)}
+.foot-social{display:flex;gap:14px}
+.foot-social a{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fg);text-decoration:none}
+.foot-social a:hover{border-color:var(--accent);color:var(--accent)}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:34px;padding-top:24px;border-top:1px solid var(--line);font-size:.78rem;color:var(--mut);flex-wrap:wrap;gap:14px}
+.totop{display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--mut);font-size:.78rem}
+.totop:hover{color:var(--accent)}
+
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* FAQ */
+.faq{max-width:760px}
+.faq details{border-bottom:1px solid var(--line);padding:18px 0}
+.faq summary{cursor:pointer;font-family:var(--display);font-style:italic;font-size:1.15rem;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq summary::after{content:"+";color:var(--accent);font-style:normal}
+.faq details[open] summary::after{content:"–"}
+.faq p{color:var(--mut);margin:12px 0 0}
+/* Inbox */
+.inbox{border:1px solid var(--line);background:var(--bg-raised);padding:24px;margin-top:2.5rem}
+.inbox h3{font-size:1.2rem;font-style:italic;margin-bottom:12px}
+.inbox-row{padding:14px 0;border-top:1px solid var(--line);font-size:.9rem}
+.inbox-row b{font-family:var(--display);font-style:italic}
+.inbox-row span{color:var(--mut)}
+
+/* Admin */
+.adm{position:fixed;inset:0;z-index:100;background:var(--bg);overflow:auto;padding:max(20px,env(safe-area-inset-top,0px)) 5vw 60px}
+.adm-in{max-width:980px;margin:0 auto}
+.adm-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.adm-card{border:1px solid var(--line);background:var(--bg-raised);padding:18px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.adm-card .thumb{width:110px;height:84px;object-fit:cover;background:var(--line)}
+.adm-card .col{flex:1;min-width:220px}
+.adm .field{margin-bottom:12px}
+.adm-btn{padding:9px 16px;border:1px solid var(--line);background:transparent;color:var(--fg);font-size:.8rem;border-radius:2px}
+.adm-btn.pri{background:var(--accent);color:#1b1304;border-color:var(--accent);font-weight:600}
+.adm-btn.del{color:#c0392b;border-color:#c0392b}
+.adm-msg{padding:10px 14px;border:1px solid var(--accent);background:var(--accent-soft);margin-bottom:14px;font-size:.88rem}
+.adm-login{max-width:400px;margin:12vh auto 0}
+</style>
+
+</head><body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef,useCallback} = React;
+/* ---------- sample content (seeded into db on first publish) ---------- */
+const PORTFOLIO = [
+  {id:"p1",cat:"Weddings",title:"Golden Hour Vows",url:"https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.3},
+  {id:"p2",cat:"Portraits",title:"Studio Light Study",url:"https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.1},
+  {id:"p3",cat:"Family",title:"Sunday Morning",url:"https://images.pexels.com/photos/1128317/pexels-photo-1128317.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.0},
+  {id:"p4",cat:"Landscape",title:"Mist Over the Ridge",url:"https://images.pexels.com/photos/1366630/pexels-photo-1366630.jpeg?auto=compress&cs=tinysrgb&w=1200",h:0.75},
+  {id:"p5",cat:"Events",title:"The First Toast",url:"https://images.pexels.com/photos/2306281/pexels-photo-2306281.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.2},
+  {id:"p6",cat:"Weddings",title:"Veil in the Wind",url:"https://images.pexels.com/photos/1024992/pexels-photo-1024992.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.35},
+  {id:"p7",cat:"Portraits",title:"Quiet Confidence",url:"https://images.pexels.com/photos/1239288/pexels-photo-1239288.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.25},
+  {id:"p8",cat:"Landscape",title:"Coastal Blue Hour",url:"https://images.pexels.com/photos/1114897/pexels-photo-1114897.jpeg?auto=compress&cs=tinysrgb&w=1200",h:0.7},
+  {id:"p9",cat:"Family",title:"Three Generations",url:"https://images.pexels.com/photos/1128318/pexels-photo-1128318.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.15},
+  {id:"p10",cat:"Events",title:"Dance Floor Lights",url:"https://images.pexels.com/photos/1540406/pexels-photo-1540406.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.0},
+  {id:"p11",cat:"Weddings",title:"Rings & Paper",url:"https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=1200",h:0.9},
+  {id:"p12",cat:"Portraits",title:"Window Seat",url:"https://images.pexels.com/photos/1848565/pexels-photo-1848565.jpeg?auto=compress&cs=tinysrgb&w=1200",h:1.3},
+];
+const CATS = ["All","Weddings","Portraits","Family","Landscape","Events"];
+
+const SERVICES = [
+  {id:"s1",name:"Portrait Session",price:"250",unit:"session",img:"https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=800",badge:"Most booked",feats:["60-minute studio or outdoor session","20 fully retouched images","Private online gallery","Print release included"]},
+  {id:"s2",name:"Wedding Collection",price:"2,400",unit:"day",img:"https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=800",badge:"Full day",feats:["10 hours of coverage","Two photographers","400+ edited images","Engagement session included","Heirloom album design"]},
+  {id:"s3",name:"Family Session",price:"320",unit:"session",img:"https://images.pexels.com/photos/1128317/pexels-photo-1128317.jpeg?auto=compress&cs=tinysrgb&w=800",badge:"",feats:["90 minutes, home or location","30 fully retouched images","Sibling & pet-friendly","Same-week preview gallery"]},
+  {id:"s4",name:"Event Coverage",price:"180",unit:"hour",img:"https://images.pexels.com/photos/2306281/pexels-photo-2306281.jpeg?auto=compress&cs=tinysrgb&w=800",badge:"Hourly",feats:["2-hour minimum","Candid & formal coverage","48-hour sneak peek","Full gallery in 2 weeks"]},
+];
+
+const TESTIMONIALS = [
+  {id:"t1",name:"Priya & Dev",role:"Wedding, October 2025",text:"Every photo feels like a memory we forgot we had. The editing is quiet and honest, never overdone.",stars:5},
+  {id:"t2",name:"Mark Oduya",role:"Family session",text:"Our kids don't sit still for anything, yet somehow we got a gallery full of real, unposed joy.",stars:5},
+  {id:"t3",name:"Grace Lin",role:"Portrait session",text:"I've never liked photos of myself until this shoot. The direction made all the difference.",stars:5},
+  {id:"t4",name:"Carter & Co.",role:"Product launch event",text:"Fast turnaround, great instincts for the room, and not a single awkward candid in the set.",stars:4},
+];
+
+
+const DEFAULT_CFG={
+  shop:"Lumière", fullName:"Lumière Photography Studio", logo:"",
+  heroEyebrow:"Est. 2014 · Based in the Bay Area", heroTitle:"Capturing Moments\nThat Last Forever",
+  heroText:"Documentary-style wedding, portrait, and event photography — quiet direction, honest editing, images you'll still love in twenty years.",
+  heroImg:"https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=1600",
+  portfolio:PORTFOLIO, services:SERVICES, testimonials:TESTIMONIALS,
+  aboutTitle:"Photography That Doesn't Try Too Hard",
+  aboutText:"Lumière started in a spare bedroom in 2014 with one camera and a conviction: the best photographs happen when people forget they're being photographed. Today we're a small studio of three photographers, still shooting the same way — close attention, quiet direction, and editing that respects what actually happened in the room.",
+  aboutImg1:"https://images.pexels.com/photos/3771089/pexels-photo-3771089.jpeg?auto=compress&cs=tinysrgb&w=900",
+  aboutImg2:"https://images.pexels.com/photos/2510428/pexels-photo-2510428.jpeg?auto=compress&cs=tinysrgb&w=900",
+  badge:"11 Years\nBehind the Lens",
+  stats:[["11","Years in Business"],["640+","Sessions Shot"],["480+","Happy Clients"],["9","Industry Awards"]],
+  address:"214 Harbor Lane, Oakland, CA", phone:"+1 (415) 555-0137", email:"hello@lumierestudio.example", hours:"Tue–Sat, 10am–6pm", currency:"$"
+};
+const imgSrc=(x)=>{ if(!(x&&x.startsWith("asset:"))) return x; if(window.claude?.use) return "/_blob/"+x.slice(6); try{return localStorage.getItem("lum_img_"+x.slice(6))||"";}catch(e){return "";} };
+/* Standalone mode (GitHub Pages etc.): store content in this browser's localStorage */
+const localUse=async(name)=>{
+  const K=(p)=>"lum_doc_"+p, subs={};
+  const snap=(p)=>{const v=localStorage.getItem(K(p));return {exists:v!==null,data:()=>v?JSON.parse(v):undefined};};
+  if(name==="db") return {doc:(p)=>({
+    get:async()=>snap(p),
+    set:async(d)=>{localStorage.setItem(K(p),JSON.stringify(d));(subs[p]||[]).forEach(f=>f(snap(p)));},
+    onSnapshot:(f)=>{(subs[p]=subs[p]||[]).push(f);f(snap(p));return()=>{subs[p]=(subs[p]||[]).filter(x=>x!==f);};}
+  })};
+  if(name==="assets") return {upload:async(file)=>{
+    const url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});
+    const sc=Math.min(1,1400/Math.max(img.width,img.height)), c=document.createElement("canvas");
+    c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    const id=Math.random().toString(36).slice(2,10);
+    localStorage.setItem("lum_img_"+id,c.toDataURL("image/jpeg",0.8));
+    return {id};
+  }};
+  return null;
+};
+const SiteCtx=React.createContext({cfg:DEFAULT_CFG});
+const useSite=()=>React.useContext(SiteCtx);
+/* ---------- Admin ---------- */
+const sha=async(t)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)))).map(x=>x.toString(16).padStart(2,"0")).join("");
+const uid=()=>Math.random().toString(36).slice(2,9);
+const DEF_USER="saravanan", DEF_PASS="saravanan1436";
+const digits=(x)=>(x||"").replace(/\D/g,"");
+
+function T({label,v,on,area,type}){
+  return <div className="field"><label>{label}</label>{area?<textarea rows="3" value={v||""} onChange={e=>on(e.target.value)}/>:<input type={type||"text"} value={v||""} onChange={e=>on(e.target.value)}/>}</div>;
+}
+function ImgPick({label,v,on,assets,setMsg}){
+  const pick=async(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    if(!assets){setMsg("Photo upload isn't available in this view.");return;}
+    try{ setMsg("Uploading…"); const r=await assets.upload(f); on("asset:"+r.id); setMsg("Photo uploaded — press Save changes."); }
+    catch(err){ setMsg("Upload failed: "+(err?.message||err?.code||"error")); }
+  };
+  return <div className="field"><label>{label}</label>
+    <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+      {v && <img className="thumb" style={{width:90,height:64,objectFit:"cover"}} src={imgSrc(v)} alt=""/>}
+      <input type="file" accept="image/*" onChange={pick}/>
+    </div></div>;
+}
+
+function Admin({onClose}){
+  const {cfg,db,assets}=useSite();
+  const [view,setView]=useState(()=>{try{return sessionStorage.getItem("adm")==="1"?"panel":"login";}catch(e){return "login";}});
+  const [msg,setMsg]=useState("");
+  const [tab,setTab]=useState("General");
+  const [draft,setDraft]=useState(()=>JSON.parse(JSON.stringify(cfg)));
+  const [f,setF]=useState({u:"",p:"",cur:"",n1:"",n2:"",em:"",mb:""});
+  const [acct,setAcct]=useState(null);
+  const [reset,setReset]=useState(false);
+  const set=(k,v)=>setDraft(d=>({...d,[k]:v}));
+  const setItem=(key,i,k,v)=>setDraft(d=>({...d,[key]:d[key].map((x,n)=>n===i?{...x,[k]:v}:x)}));
+  const addItem=(key,item)=>setDraft(d=>({...d,[key]:[...d[key],item]}));
+  const delItem=(key,i)=>{ if(confirm("Delete this item?")) setDraft(d=>({...d,[key]:d[key].filter((_,n)=>n!==i)})); };
+  const ff=(k)=>(v)=>setF(x=>({...x,[k]:v}));
+  const authDoc=()=>db.doc("admin/auth");
+  const getAuth=async()=>{const s=await authDoc().get(); return s.exists?s.data():null;};
+  const needDb=()=>{ if(!db){setMsg("Open this page signed in as the site owner to use the admin panel.");return true;} return false; };
+
+  useEffect(()=>{ if(view==="panel"&&db) getAuth().then(a=>{ if(a){setAcct(a);setF(x=>({...x,em:a.email||"",mb:a.mobile||""}));} }).catch(()=>{}); },[view,db]);
+
+  const login=async(e)=>{
+    e.preventDefault(); if(needDb()) return;
+    try{
+      const a=await getAuth();
+      const ok = a ? (f.u.trim()===a.user && await sha(a.salt+f.p)===a.hash) : (f.u.trim()===DEF_USER && f.p===DEF_PASS);
+      if(ok){ try{sessionStorage.setItem("adm","1");}catch(e){} setMsg(""); setView("panel"); }
+      else setMsg("Wrong user name or password.");
+    }catch(err){ setMsg("Couldn't reach the database. Try again."); }
+  };
+  const saveAuth=async(patch,newPass)=>{
+    const a=(await getAuth())||{user:DEF_USER,salt:uid(),hash:await sha(""+"")};
+    let next={...a,...patch};
+    if(!a.hash || !(await getAuth())){ next.salt=uid(); next.hash=await sha(next.salt+DEF_PASS); }
+    if(newPass){ next.salt=uid(); next.hash=await sha(next.salt+newPass); }
+    await authDoc().set(next); setAcct(next);
+  };
+  const changePw=async()=>{
+    if(needDb()) return;
+    const a=await getAuth();
+    const okCur = a ? await sha(a.salt+f.cur)===a.hash : f.cur===DEF_PASS;
+    if(!okCur) return setMsg("Current password is wrong.");
+    if(f.n1.length<6) return setMsg("New password needs at least 6 characters.");
+    if(f.n1!==f.n2) return setMsg("New passwords don't match.");
+    try{ await saveAuth({},f.n1); setF(x=>({...x,cur:"",n1:"",n2:""})); setMsg("Password changed."); }catch(e){ setMsg("Couldn't save the new password."); }
+  };
+  const saveRecovery=async()=>{
+    if(needDb()) return;
+    try{ await saveAuth({email:f.em.trim().toLowerCase(),mobile:digits(f.mb)}); setMsg("Recovery email and mobile saved."); }catch(e){ setMsg("Couldn't save."); }
+  };
+  const forgot=async(e)=>{
+    e.preventDefault(); if(needDb()) return;
+    const a=await getAuth();
+    if(!a||!a.email||!a.mobile) return setMsg("No recovery email/mobile has been saved yet. Log in with your current password and add them under Account first.");
+    if(f.em.trim().toLowerCase()===a.email && digits(f.mb)===a.mobile) { setReset(true); setMsg("Details match. Set a new password."); }
+    else setMsg("Email and mobile number don't match the saved ones.");
+  };
+  const doReset=async()=>{
+    if(f.n1.length<6) return setMsg("New password needs at least 6 characters.");
+    if(f.n1!==f.n2) return setMsg("Passwords don't match.");
+    try{ await saveAuth({},f.n1); setReset(false); setF(x=>({...x,n1:"",n2:"",p:""})); setView("login"); setMsg("Password reset. Please log in."); }catch(e){ setMsg("Couldn't save."); }
+  };
+  const save=async()=>{
+    if(needDb()) return;
+    try{ await db.doc("site/config").set(draft); setMsg("Saved. Your site is updated."); }
+    catch(e){ setMsg("Save failed — storage may be full. Try smaller or fewer photos."); }
+  };
+  const logout=()=>{ try{sessionStorage.removeItem("adm");}catch(e){} setView("login"); };
+  const exportCfg=()=>{
+    const txt=JSON.stringify(draft,(k,v)=>typeof v==="string"&&v.startsWith("asset:")?(localStorage.getItem("lum_img_"+v.slice(6))||""):v,1);
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:"application/json"})); a.download="config.json"; a.click();
+    setMsg("config.json downloaded. Upload it to your GitHub repo (next to index.html) to publish your changes.");
+  };
+  const importCfg=async(e)=>{ const f0=e.target.files[0]; if(!f0) return; try{ setDraft({...DEFAULT_CFG,...JSON.parse(await f0.text())}); setMsg("Imported — press Save changes."); }catch(err){ setMsg("That file isn't a valid config.json."); } };
+  const im={assets,setMsg};
+
+  const shell=(children)=>(<div className="adm"><div className="adm-in">{children}</div></div>);
+  const Msg=()=>msg?<div className="adm-msg" role="status">{msg}</div>:null;
+
+  if(view==="login") return shell(<div className="adm-login">
+    <h2 style={{fontStyle:"italic",marginBottom:18}}>Admin login</h2><Msg/>
+    {view==="login" && !reset && <form onSubmit={login}>
+      <T label="User name" v={f.u} on={ff("u")}/><T label="Password" type="password" v={f.p} on={ff("p")}/>
+      <button className="submit-btn">Log in</button>{" "}
+      <button type="button" className="adm-btn" onClick={()=>{setMsg("");setView("forgot");}}>Forgot password?</button>{" "}
+      <button type="button" className="adm-btn" onClick={onClose}>Back to site</button>
+    </form>}
+  </div>);
+
+  if(view==="forgot") return shell(<div className="adm-login">
+    <h2 style={{fontStyle:"italic",marginBottom:6}}>Forgot password</h2>
+    <p className="lede" style={{fontSize:".9rem"}}>Enter the recovery email and mobile number saved in your account.</p><Msg/>
+    {!reset ? <form onSubmit={forgot}>
+      <T label="Email" type="email" v={f.em} on={ff("em")}/><T label="Mobile number" v={f.mb} on={ff("mb")}/>
+      <button className="submit-btn">Verify</button>{" "}<button type="button" className="adm-btn" onClick={()=>{setMsg("");setView("login");}}>Back</button>
+    </form> : <div>
+      <T label="New password" type="password" v={f.n1} on={ff("n1")}/><T label="Confirm new password" type="password" v={f.n2} on={ff("n2")}/>
+      <button className="submit-btn" onClick={doReset}>Reset password</button>
+    </div>}
+  </div>);
+
+  return shell(<>
+    <div className="adm-top"><h2 style={{fontStyle:"italic"}}>Admin panel</h2>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button className="adm-btn pri" onClick={save}>Save changes</button><button className="adm-btn" onClick={()=>{save().then(()=>onClose());}}>Save &amp; preview site</button><button className="adm-btn pri" onClick={exportCfg}>Download config.json</button><label className="adm-btn" style={{cursor:"pointer"}}>Import config.json<input type="file" accept=".json" hidden onChange={importCfg}/></label><button className="adm-btn" onClick={()=>{if(confirm("Reset everything to the original content?")){setDraft(JSON.parse(JSON.stringify(DEFAULT_CFG)));setMsg("Reset — press Save changes.");}}}>Reset</button><button className="adm-btn" onClick={logout}>Log out</button></div></div>
+    <Msg/>
+    <div className="filters">{["General","Home & About","Portfolio","Packages","Reviews","Account"].map(t=><button key={t} className={"chip"+(tab===t?" on":"")} onClick={()=>setTab(t)}>{t}</button>)}</div>
+
+    {tab==="General" && <div>
+      <T label="Shop name (shown in menu & footer)" v={draft.shop} on={v=>set("shop",v)}/>
+      <T label="Full business name (footer copyright)" v={draft.fullName} on={v=>set("fullName",v)}/>
+      <ImgPick label="Logo (leave empty for the camera icon)" v={draft.logo} on={v=>set("logo",v)} {...im}/>
+      {draft.logo && <button className="adm-btn" onClick={()=>set("logo","")}>Remove logo</button>}
+      <T label="Currency symbol" v={draft.currency} on={v=>set("currency",v)}/>
+      <T label="Address" v={draft.address} on={v=>set("address",v)}/><T label="Phone" v={draft.phone} on={v=>set("phone",v)}/>
+      <T label="Email" v={draft.email} on={v=>set("email",v)}/><T label="Studio hours" v={draft.hours} on={v=>set("hours",v)}/>
+    </div>}
+
+    {tab==="Home & About" && <div>
+      <T label="Small line above headline" v={draft.heroEyebrow} on={v=>set("heroEyebrow",v)}/>
+      <T label="Headline (new line = line break)" area v={draft.heroTitle} on={v=>set("heroTitle",v)}/>
+      <T label="Headline description" area v={draft.heroText} on={v=>set("heroText",v)}/>
+      <ImgPick label="Home background photo" v={draft.heroImg} on={v=>set("heroImg",v)} {...im}/>
+      <T label="About title" v={draft.aboutTitle} on={v=>set("aboutTitle",v)}/>
+      <T label="About text" area v={draft.aboutText} on={v=>set("aboutText",v)}/>
+      <ImgPick label="About photo 1" v={draft.aboutImg1} on={v=>set("aboutImg1",v)} {...im}/>
+      <ImgPick label="About photo 2" v={draft.aboutImg2} on={v=>set("aboutImg2",v)} {...im}/>
+      <T label="Round badge text" area v={draft.badge} on={v=>set("badge",v)}/>
+      <h3 style={{margin:"18px 0 8px"}}>Numbers</h3>
+      {draft.stats.map((st,i)=><div className="adm-card" key={i}><div className="col"><T label="Number" v={st[0]} on={v=>set("stats",draft.stats.map((x,n)=>n===i?[v,x[1]]:x))}/></div><div className="col"><T label="Label" v={st[1]} on={v=>set("stats",draft.stats.map((x,n)=>n===i?[x[0],v]:x))}/></div></div>)}
+    </div>}
+
+    {tab==="Portfolio" && <div>
+      <button className="adm-btn pri" style={{marginBottom:14}} onClick={()=>addItem("portfolio",{id:"p"+uid(),cat:"Portraits",title:"New photo",url:"",h:1.2})}>+ Add photo</button>
+      {draft.portfolio.map((p,i)=><div className="adm-card" key={p.id}>
+        {p.url ? <img className="thumb" src={imgSrc(p.url)} alt=""/> : <div className="thumb"/>}
+        <div className="col"><T label="Title" v={p.title} on={v=>setItem("portfolio",i,"title",v)}/><T label="Category" v={p.cat} on={v=>setItem("portfolio",i,"cat",v)}/>
+          <ImgPick label="Replace photo" v="" on={v=>setItem("portfolio",i,"url",v)} {...im}/>
+          <button className="adm-btn del" onClick={()=>delItem("portfolio",i)}>Delete</button></div></div>)}
+    </div>}
+
+    {tab==="Packages" && <div>
+      <button className="adm-btn pri" style={{marginBottom:14}} onClick={()=>addItem("services",{id:"s"+uid(),name:"New package",price:"0",unit:"session",img:"",badge:"",feats:["First feature"]})}>+ Add package</button>
+      {draft.services.map((s,i)=><div className="adm-card" key={s.id}>
+        {s.img ? <img className="thumb" src={imgSrc(s.img)} alt=""/> : <div className="thumb"/>}
+        <div className="col"><T label="Package name" v={s.name} on={v=>setItem("services",i,"name",v)}/>
+          <div style={{display:"flex",gap:10}}><T label="Price" v={s.price} on={v=>setItem("services",i,"price",v)}/><T label="Per (session/day/hour)" v={s.unit} on={v=>setItem("services",i,"unit",v)}/></div>
+          <T label="Badge (optional)" v={s.badge} on={v=>setItem("services",i,"badge",v)}/>
+          <T label="Features (one per line)" area v={(s.feats||[]).join("\n")} on={v=>setItem("services",i,"feats",v.split("\n").filter(x=>x.trim()!==""||true))}/>
+          <ImgPick label="Replace photo" v="" on={v=>setItem("services",i,"img",v)} {...im}/>
+          <button className="adm-btn del" onClick={()=>delItem("services",i)}>Delete</button></div></div>)}
+    </div>}
+
+    {tab==="Reviews" && <div>
+      <button className="adm-btn pri" style={{marginBottom:14}} onClick={()=>addItem("testimonials",{id:"t"+uid(),name:"Client name",role:"Session type",text:"Review text",stars:5})}>+ Add review</button>
+      {draft.testimonials.map((t,i)=><div className="adm-card" key={t.id}><div className="col">
+        <T label="Name" v={t.name} on={v=>setItem("testimonials",i,"name",v)}/><T label="Role / session" v={t.role} on={v=>setItem("testimonials",i,"role",v)}/>
+        <T label="Review" area v={t.text} on={v=>setItem("testimonials",i,"text",v)}/>
+        <T label="Stars (1–5)" v={String(t.stars)} on={v=>setItem("testimonials",i,"stars",Math.max(1,Math.min(5,parseInt(v)||5)))}/>
+        <button className="adm-btn del" onClick={()=>delItem("testimonials",i)}>Delete</button></div></div>)}
+    </div>}
+
+    {tab==="Account" && <div>
+      <h3 style={{marginBottom:10}}>Change password</h3>
+      <T label="Current password" type="password" v={f.cur} on={ff("cur")}/><T label="New password" type="password" v={f.n1} on={ff("n1")}/><T label="Confirm new password" type="password" v={f.n2} on={ff("n2")}/>
+      <button className="adm-btn pri" onClick={changePw}>Change password</button>
+      <h3 style={{margin:"26px 0 6px"}}>Recovery details (for Forgot password)</h3>
+      <T label="Recovery email" type="email" v={f.em} on={ff("em")}/><T label="Recovery mobile number" v={f.mb} on={ff("mb")}/>
+      <button className="adm-btn pri" onClick={saveRecovery}>Save recovery details</button>
+    </div>}
+  </>);
+}
+
+
+function AdminApp(){
+  const [cfg,setCfg]=useState(DEFAULT_CFG); const [db,setDb]=useState(null); const [assets,setAssets]=useState(null); const [ready,setReady]=useState(false);
+  useEffect(()=>{(async()=>{
+    const d=await localUse("db"); setDb(d); setAssets(await localUse("assets"));
+    const s=await d.doc("site/config").get();
+    if(s.exists) setCfg({...DEFAULT_CFG,...s.data()});
+    else { try{ const r=await fetch("config.json",{cache:"no-store"}); if(r.ok) setCfg({...DEFAULT_CFG,...await r.json()}); }catch(e){} }
+    setReady(true);
+  })();},[]);
+  if(!ready) return null;
+  return <SiteCtx.Provider value={{cfg,db,assets}}><Admin onClose={()=>{location.href="index.html?preview=1";}}/></SiteCtx.Provider>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<AdminApp/>);
+</script>
+</body></html>
